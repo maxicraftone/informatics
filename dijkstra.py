@@ -4,7 +4,7 @@ import math
 class Node:
     def __init__(self, name: str) -> None:
         """
-        Initialization
+        Node class. Just holds the name of the node
 
         :param name: Name/ Title of the node (only for representation)
         """
@@ -20,7 +20,8 @@ class Node:
 class Edge:
     def __init__(self, node1: Node, node2: Node, distance: int, direction: int) -> None:
         """
-        Initialization
+        Edge class for connecting nodes through edges with distances and
+        directions
 
         :param node1: First node
         :param node2: Second node
@@ -41,10 +42,13 @@ class Edge:
 
         :return: Nodes
         """
+        # If facing both nodes
         if self.direction == 0:
             return (self.node1, self.node2)
+        # If facing the first node
         elif self.direction == 1:
             return (self.node1,)
+        # If facing the second node
         elif self.direction == 2:
             return (self.node2,)
 
@@ -102,10 +106,13 @@ class Edge:
         return node == self.node2
 
     def __repr__(self) -> str:
+        # If the edge is facing both nodes
         if self.direction == 0:
             return self.node1.name + ' <-----> ' + self.node2.name
+        # If the edge is facing the first node
         elif self.direction == 1:
             return self.node1.name + ' <------ ' + self.node2.name
+        # If the edge is facing the second node
         elif self.direction == 2:
             return self.node1.name + ' ------> ' + self.node2.name
 
@@ -113,8 +120,9 @@ class Edge:
 class Graph:
     def __init__(self) -> None:
         """
-        Initialization
+        Graph class containing nodes and edges with methods of path finding
         """
+        # Define nodes and edges lists
         self.nodes = []
         self.edges = []
 
@@ -174,11 +182,17 @@ class Graph:
         :return: Dictionary with {<node>: <edge>, ...}
         """
         neighbors = {}
-        if node in self.nodes:
+        # For all nodes
+        if n in self.nodes:
+            # For all edges
             for e in self.edges:
+                # If the node is the first in the edge declaration
                 if e.is_first(node):
+                    # Add the other node to the dictionary of neighbors
                     neighbors[e.node2] = e
+                # If the node is the second in the edge declaration
                 elif e.is_second(node):
+                    # Add the other node to the dictionary of neighbors
                     neighbors[e.node1] = e
         return neighbors
 
@@ -195,6 +209,7 @@ class Graph:
         if start in self.nodes and end in self.nodes:
             # Init path
             path = {}
+            # Set all node distances to infinity and the start distance to 0
             for node in self.nodes:
                 path[node] = [math.inf, None]
             path[start] = [0, None]
@@ -232,12 +247,17 @@ class Graph:
         """
         neighbors = self.get_neighbors(prev_node)
         for n in neighbors:
+            # If the edge is facing the neighbor node
             if n in neighbors[n].facing():
+                # If the distance is smaller than the current distance to that node
                 if path[n][0] > neighbors[n].distance + path[prev_node][0]:
+                    # Set distance as new
                     path[n] = [neighbors[n].distance + path[prev_node][0], prev_node]
+                    # Sort path by distance
                     path = self.sort_dict(path)
 
         for n in neighbors:
+            # If the next node is not the previous node and its distance was changed in the last step
             if n != path[prev_node][1] and path[n][0] == neighbors[n].distance + path[prev_node][0]:
                 # Calc further path with new nearest node
                 path = self.calc_paths(n, path)
