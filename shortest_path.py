@@ -217,8 +217,11 @@ class Graph:
             path[start] = [0, None]
 
             # Calc path
-            ##path = self.calc_paths(start, path)
-            path = self.dijkstra(start, path)
+            path = self.bellman_ford(start, path)
+            #path = self.dijkstra(start, path)
+
+            if path is None:
+                return None
 
             # Create list of passed notes in the path
             path_nodes = [end]
@@ -249,7 +252,7 @@ class Graph:
             nodes.pop(u)
             neighbors = self.get_neighbors(u)
             for n in neighbors:
-                if n in nodes:
+                if n in nodes and n in neighbors[n].facing():
                     if u in distances:
                         nodes[n] = [neighbors[n].distance + distances[u][0], u]
                         distances[n] = nodes[n]
@@ -258,6 +261,17 @@ class Graph:
                         distances[n] = nodes[n]
 
         return distances
+
+    def bellman_ford(self, start: Node, path: dict) -> dict:
+        for i in range(len(self.nodes)-1):
+            for edge in self.edges:
+                if (path[edge.node1][0] + edge.distance) < path[edge.node2][0] and edge.node2 in edge.facing():
+                    path[edge.node2] = [path[edge.node1][0] + edge.distance, edge.node1]
+        for edge in self.edges:
+            if (path[edge.node1][0] + edge.distance) < path[edge.node2][0]:
+                print('Negative weight loop found')
+                return None
+        return path
 
     @staticmethod
     def sort_dict(dictionary: dict) -> dict:
