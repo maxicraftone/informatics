@@ -217,7 +217,8 @@ class Graph:
             path[start] = [0, None]
 
             # Calc path
-            path = self.calc_paths(start, path)
+            ##path = self.calc_paths(start, path)
+            path = self.dijkstra(start, path)
 
             # Create list of passed notes in the path
             path_nodes = [end]
@@ -226,6 +227,7 @@ class Graph:
             while n != start:
                 path_nodes.append(path[n][1])
                 n = path[n][1]
+                print(n)
 
             path_nodes.reverse()
 
@@ -238,44 +240,24 @@ class Graph:
         elif end not in self.nodes:
             print('End node not in graph')
 
-    def dijkstra(self, start: Node, end: Node, path: dict) -> dict:
+    def dijkstra(self, start: Node, path: dict) -> dict:
         nodes = path
+        distances = {}
         while len(nodes) > 0:
-            u = min(nodes)
-            nodes.remove(u)
-            for n in self.get_neighbors(u)
+            nodes = self.sort_dict(nodes)
+            u = list(nodes.keys())[0]
+            nodes.pop(u)
+            neighbors = self.get_neighbors(u)
+            for n in neighbors:
                 if n in nodes:
-                    new_dist = self.update_distance(u, n)
-                    nodes[n]
+                    if u in distances:
+                        nodes[n] = [neighbors[n].distance + distances[u][0], u]
+                        distances[n] = nodes[n]
+                    else:
+                        nodes[n] = [neighbors[n].distance, u]
+                        distances[n] = nodes[n]
 
-
-    def calc_paths(self, prev_node: Node, path: dict) -> dict:
-        """
-        Recursive function to calculate the path from the previous node to the
-        nearest next one
-
-        :param prev_node: Previous node in the path
-        :param path: The path so far
-        :return: Dictionary with nodes and weights {<node>: [<distance>, <prev_node>], ...}
-        """
-        neighbors = self.get_neighbors(prev_node)
-        for n in neighbors:
-            # If the edge is facing the neighbor node
-            if n in neighbors[n].facing():
-                # If the distance is smaller than the current distance to that node
-                if path[n][0] > neighbors[n].distance + path[prev_node][0]:
-                    # Set distance as new
-                    path[n] = [neighbors[n].distance + path[prev_node][0], prev_node]
-                    # Sort path by distance
-                    path = self.sort_dict(path)
-
-        for n in neighbors:
-            # If the next node is not the previous node and its distance was changed in the last step
-            if n != path[prev_node][1] and path[n][0] == neighbors[n].distance + path[prev_node][0]:
-                # Calc further path with new nearest node
-                path = self.calc_paths(n, path)
-
-        return path
+        return distances
 
     @staticmethod
     def sort_dict(dictionary: dict) -> dict:
@@ -329,7 +311,7 @@ if __name__ == '__main__':
     #m = Node('M')
     #n = Node('N')
 
-    graph.set_nodes([mue, frb, stg, fkf, kbl, kln, dsd, brm, hmb, kil, swr, drs, lpg, eft, hnv, mgd, bln])
+    graph.set_nodes([mue, frb, stg, fkf, kbl, kln, dsd, brm, hmb, kil, swr, bln, drs, lpg, eft, hnv, mgd])
     graph.set_edges([
                 Edge(mue, frb, 280, 1), Edge(frb, stg, 140, 1), Edge(stg, mue, 240, 1),
                 Edge(stg, fkf, 100, 1), Edge(fkf, kbl, 70, 1), Edge(kln, kbl, 70, 1),
