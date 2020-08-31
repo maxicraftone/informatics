@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import math
+import time
+import sys
 
 class Node:
     def __init__(self, name: str) -> None:
@@ -183,7 +185,7 @@ class Graph:
         """
         neighbors = {}
         # For all nodes
-        if n in self.nodes:
+        if node in self.nodes:
             # For all edges
             for e in self.edges:
                 # If the node is the first in the edge declaration
@@ -236,6 +238,17 @@ class Graph:
         elif end not in self.nodes:
             print('End node not in graph')
 
+    def dijkstra(self, start: Node, end: Node, path: dict) -> dict:
+        nodes = path
+        while len(nodes) > 0:
+            u = min(nodes)
+            nodes.remove(u)
+            for n in self.get_neighbors(u)
+                if n in nodes:
+                    new_dist = self.update_distance(u, n)
+                    nodes[n]
+
+
     def calc_paths(self, prev_node: Node, path: dict) -> dict:
         """
         Recursive function to calculate the path from the previous node to the
@@ -274,33 +287,85 @@ class Graph:
         """
         return {k: v for k, v in sorted(dictionary.items(), key=lambda item: item[1])}
 
+def benchmark(function) -> None:
+    time_before = time.time_ns()
+    function()
+    time_delta = (time.time_ns() - time_before)
+    print('Benchmark: ' + str(time_delta/1000000) + ' ms')
 
 if __name__ == '__main__':
     graph = Graph()
-    a = Node('A')
-    b = Node('B')
-    c = Node('C')
-    d = Node('D')
-    e = Node('E')
-    f = Node('F')
-    g = Node('G')
-    h = Node('H')
-    i = Node('I')
-    j = Node('J')
-    k = Node('K')
-    l = Node('L')
-    m = Node('M')
-    n = Node('N')
 
-    graph.set_nodes([a, b, c, d, e, f, g, h, i, j, k, l, m, n])
+    mue = Node('München')
+    frb = Node('Freiburg')
+    stg = Node('Stuttgart')
+    fkf = Node('Frankfurt')
+    kbl = Node('Koblenz')
+    kln = Node('Köln')
+    dsd = Node('Düsseldorf')
+    brm = Node('Bremen')
+    hmb = Node('Hamburg')
+    kil = Node('Kiel')
+    swr = Node('Schwerin')
+    bln = Node('Berlin')
+    drs = Node('Dresden')
+    lpg = Node('Leipzig')
+    eft = Node('Erfurt')
+    hnv = Node('Hannover')
+    mgd = Node('Magdeburg')
+
+    #a = Node('A')
+    #b = Node('B')
+    #c = Node('C')
+    #d = Node('D')
+    #e = Node('E')
+    #f = Node('F')
+    #g = Node('G')
+    #h = Node('H')
+    #i = Node('I')
+    #j = Node('J')
+    #k = Node('K')
+    #l = Node('L')
+    #m = Node('M')
+    #n = Node('N')
+
+    graph.set_nodes([mue, frb, stg, fkf, kbl, kln, dsd, brm, hmb, kil, swr, drs, lpg, eft, hnv, mgd, bln])
     graph.set_edges([
-                Edge(a, d, 4, 1), Edge(a, c, 2, 0), Edge(b, d, 1, 0),
-                Edge(b, e, 2, 2), Edge(c, d, 5, 0), Edge(c, f, 6, 0),
-                Edge(c, g, 4, 1), Edge(d, e, 3, 0), Edge(d, k, 5, 2),
-                Edge(e, h, 2, 2), Edge(e, i, 3, 0), Edge(f, g, 3, 2),
-                Edge(f, l, 4, 1), Edge(g, j, 4, 2), Edge(g, k, 3, 0),
-                Edge(h, i, 2, 0), Edge(h, n, 4, 0), Edge(j, m, 2, 0),
-                Edge(k, m, 1, 0), Edge(k, n, 3, 0), Edge(l, m, 3, 0)])
+                Edge(mue, frb, 280, 1), Edge(frb, stg, 140, 1), Edge(stg, mue, 240, 1),
+                Edge(stg, fkf, 100, 1), Edge(fkf, kbl, 70, 1), Edge(kln, kbl, 70, 1),
+                Edge(kln, dsd, 70, 2), Edge(kbl, dsd, 150, 1), Edge(kbl, eft, 120, 2),
+                Edge(dsd, eft, 160, 1), Edge(fkf, eft, 90, 1), Edge(fkf, mue, 290, 2),
+                Edge(eft, mue, 320, 1), Edge(lpg, mue, 530, 2), Edge(lpg, eft, 300, 2),
+                Edge(dsd, lpg, 450, 1), Edge(dsd, brm, 230, 2), Edge(brm, eft, 330, 2),
+                Edge(hmb, brm, 130, 2), Edge(kil, hmb, 130, 1), Edge(swr, kil, 320, 1),
+                Edge(bln, swr, 190, 1), Edge(bln, lpg, 160, 2), Edge(drs, lpg, 70, 2),
+                Edge(drs, bln, 150, 2), Edge(lpg, mgd, 150, 2), Edge(mgd, hnv, 100, 2),
+                Edge(hnv, bln, 190, 0), Edge(hmb, bln, 220, 0), Edge(eft, hnv, 300, 2),
+                Edge(dsd, hnv, 270, 2), Edge(hnv, brm, 130, 2), Edge(hnv, hmb, 140, 2),
 
-    path = graph.find_path(l, e)
-    print(path)
+                #33 Edges
+    ])
+
+    #graph.set_nodes([a, b, c, d, e, f, g, h, i, j, k, l, m, n])
+    #graph.set_edges([
+    #            Edge(a, d, 4, 1), Edge(a, c, 2, 0), Edge(b, d, 1, 0),
+    #            Edge(b, e, 2, 2), Edge(c, d, 5, 0), Edge(c, f, 6, 0),
+    #            Edge(c, g, 4, 1), Edge(d, e, 3, 0), Edge(d, k, 5, 2),
+    #            Edge(e, h, 2, 2), Edge(e, i, 3, 0), Edge(f, g, 3, 2),
+    #            Edge(f, l, 4, 1), Edge(g, j, 4, 2), Edge(g, k, 3, 0),
+    #            Edge(h, i, 2, 0), Edge(h, n, 4, 0), Edge(j, m, 2, 0),
+    #            Edge(k, m, 1, 0), Edge(k, n, 3, 0), Edge(l, m, 3, 0)])
+
+    nodes = {}
+    for node in graph.nodes:
+        nodes[node.name.lower()] = node
+
+    args = sys.argv[1:]
+    if len(args) == 2:
+        node1 = nodes[args[0].lower()]
+        node2 = nodes[args[1].lower()]
+        benchmark(lambda: print(graph.find_path(node1, node2)))
+
+    # benchmark(lambda: print(graph.find_path(h, f)))
+    #path = graph.find_path(h, f)
+    #print(path)
