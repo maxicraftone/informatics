@@ -12,9 +12,12 @@ class Node:
         """
         self.name = name
 
+    # Set string representation of node to just its name
     def __repr__(self) -> str:
         return self.name
 
+    # Set comparation between nodes to happen between their names
+    # (Only secondary after sorting by the distance later)
     def __gt__(self, node2) -> bool:
         return self.name > node2.name
 
@@ -107,6 +110,7 @@ class Edge:
         """
         return node == self.node2
 
+    # Set string representation of the edge
     def __repr__(self) -> str:
         # If the edge is facing both nodes
         if self.direction == 0:
@@ -199,10 +203,10 @@ class Graph:
         return neighbors
 
 
-    def find_path(self, start: Node, end: Node) -> list:
+    def find_path(self, start: Node, end: Node, algorithm: str = 'dijkstra') -> list:
         """
         Find the shortest path from start node to end node using the
-        Dijkstra algorithm
+        Dijkstra or Bellman-Ford algorithm
 
         :param start: Node to start from
         :param end: Node to end at
@@ -217,8 +221,13 @@ class Graph:
             path[start] = [0, None]
 
             # Calc path
-            path = self.bellman_ford(start, path)
-            #path = self.dijkstra(start, path)
+            if algorithm == 'bellman-ford':
+                path = self.bellman_ford(start, path)
+            elif algorithm == 'dijkstra':
+                path = self.dijkstra(start, path)
+            else:
+                print('Wrong algorithm provided, using Dijkstra ...')
+                path = self.dijkstra(start, path)
 
             if path is None:
                 return None
@@ -230,7 +239,6 @@ class Graph:
             while n != start:
                 path_nodes.append(path[n][1])
                 n = path[n][1]
-                print(n)
 
             path_nodes.reverse()
 
@@ -244,33 +252,73 @@ class Graph:
             print('End node not in graph')
 
     def dijkstra(self, start: Node, path: dict) -> dict:
+        """
+        Calculates the shortest possible path from a given start node using the
+        Dijkstra-Algorithm
+
+        :param start: Start Node
+        :param path: Dictionary of {Node: [distance, previous_node], ...} to describe the path
+        :return: Modified path dictionary with calculated distances
+        """
         nodes = path
         distances = {}
+
         while len(nodes) > 0:
+            # Sort by ascending distances
             nodes = self.sort_dict(nodes)
+            # Get the node with the smallest distance
             u = list(nodes.keys())[0]
+            # Remove that node from the dict
             nodes.pop(u)
             neighbors = self.get_neighbors(u)
+            # For all neighbors of this node
             for n in neighbors:
+                # If the neighbor was not already calculated and can be accessed by the edge
                 if n in nodes and n in neighbors[n].facing():
                     if u in distances:
-                        nodes[n] = [neighbors[n].distance + distances[u][0], u]
-                        distances[n] = nodes[n]
+                        # If the new distance would be smaller than the current one
+                        if nodes[n][0] > neighbors[n].distance + distances[u][0]:
+                            # Set new distance
+                            nodes[n] = [neighbors[n].distance + distances[u][0], u]
+                            distances[n] = nodes[n]
+
+                    # Only happens if the node is a neighbor of the start node
                     else:
+                        # Set initial distance
                         nodes[n] = [neighbors[n].distance, u]
                         distances[n] = nodes[n]
 
         return distances
 
     def bellman_ford(self, start: Node, path: dict) -> dict:
+        """
+        Calculates the shortest possible path from a given start node using the
+        Bellman-Ford-Algorithm
+
+        :param start: Start Node
+        :param path: Dictionary of {Node: [distance, previous_node], ...} to describe the path
+        :return: Modified path dictionary with calculated distances
+        """
         for i in range(len(self.nodes)-1):
-            for edge in self.edges:
-                if (path[edge.node1][0] + edge.distance) < path[edge.node2][0] and edge.node2 in edge.facing():
-                    path[edge.node2] = [path[edge.node1][0] + edge.distance, edge.node1]
-        for edge in self.edges:
-            if (path[edge.node1][0] + edge.distance) < path[edge.node2][0]:
-                print('Negative weight loop found')
-                return None
+            # Iterate over all nodes
+            for u in self.nodes:
+                # Iterate over all neighbors of the current node
+                neighbors = self.get_neighbors(u)
+                for n in neighbors:
+                    # If the new distance would be smaller than the current one and the edge is facing the right direction
+                    if (path[u][0] + neighbors[n].distance) < path[n][0] and n in neighbors[n].facing():
+                        # Change the current distance to the new one
+                        path[n] = [path[u][0] + neighbors[n].distance, u]
+
+        # Check if there are remaining smaller distances
+        for u in self.nodes:
+            neighbors = self.get_neighbors(u)
+            for n in neighbors:
+                if (path[u][0] + neighbors[n].distance) < path[n][0]:
+                    # If there are any, there might be negative weight loops
+                    if n in neighbors[n].facing():
+                        print('Negative weight loop found')
+                        return None
         return path
 
     @staticmethod
@@ -283,11 +331,18 @@ class Graph:
         """
         return {k: v for k, v in sorted(dictionary.items(), key=lambda item: item[1])}
 
+
 def benchmark(function) -> None:
+    """
+    Prints the time used to execute the given function
+
+    :param function: Function to be measured
+    """
     time_before = time.time_ns()
     function()
     time_delta = (time.time_ns() - time_before)
     print('Benchmark: ' + str(time_delta/1000000) + ' ms')
+
 
 if __name__ == '__main__':
     graph = Graph()
@@ -310,20 +365,6 @@ if __name__ == '__main__':
     hnv = Node('Hannover')
     mgd = Node('Magdeburg')
 
-    #a = Node('A')
-    #b = Node('B')
-    #c = Node('C')
-    #d = Node('D')
-    #e = Node('E')
-    #f = Node('F')
-    #g = Node('G')
-    #h = Node('H')
-    #i = Node('I')
-    #j = Node('J')
-    #k = Node('K')
-    #l = Node('L')
-    #m = Node('M')
-    #n = Node('N')
 
     graph.set_nodes([mue, frb, stg, fkf, kbl, kln, dsd, brm, hmb, kil, swr, bln, drs, lpg, eft, hnv, mgd])
     graph.set_edges([
@@ -342,26 +383,22 @@ if __name__ == '__main__':
                 #33 Edges
     ])
 
-    #graph.set_nodes([a, b, c, d, e, f, g, h, i, j, k, l, m, n])
-    #graph.set_edges([
-    #            Edge(a, d, 4, 1), Edge(a, c, 2, 0), Edge(b, d, 1, 0),
-    #            Edge(b, e, 2, 2), Edge(c, d, 5, 0), Edge(c, f, 6, 0),
-    #            Edge(c, g, 4, 1), Edge(d, e, 3, 0), Edge(d, k, 5, 2),
-    #            Edge(e, h, 2, 2), Edge(e, i, 3, 0), Edge(f, g, 3, 2),
-    #            Edge(f, l, 4, 1), Edge(g, j, 4, 2), Edge(g, k, 3, 0),
-    #            Edge(h, i, 2, 0), Edge(h, n, 4, 0), Edge(j, m, 2, 0),
-    #            Edge(k, m, 1, 0), Edge(k, n, 3, 0), Edge(l, m, 3, 0)])
 
     nodes = {}
     for node in graph.nodes:
         nodes[node.name.lower()] = node
+
+    # Script callable with args -> "python shortest_path.py <node1> <node2> [algorithm]"
+    # node1 and node2 have to be names of nodes of the graph (can be lowercase or uppercase)
+    # algorithm is optional and can either be 'dijkstra' or 'bellman-ford', default is 'dijkstra'
 
     args = sys.argv[1:]
     if len(args) == 2:
         node1 = nodes[args[0].lower()]
         node2 = nodes[args[1].lower()]
         benchmark(lambda: print(graph.find_path(node1, node2)))
-
-    # benchmark(lambda: print(graph.find_path(h, f)))
-    #path = graph.find_path(h, f)
-    #print(path)
+    elif len(args) == 3:
+        node1 = nodes[args[0].lower()]
+        node2 = nodes[args[1].lower()]
+        algorithm = args[2].lower()
+        benchmark(lambda: print(graph.find_path(node1, node2, algorithm)))
